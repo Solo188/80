@@ -197,7 +197,12 @@ class AdBlockerVpnService : VpnService() {
         vpnInterface = null
 
         broadcastState(VpnState.STOPPED)
-        stopForeground(STOP_FOREGROUND_REMOVE)
+        @Suppress("DEPRECATION")
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            stopForeground(STOP_FOREGROUND_REMOVE)
+        } else {
+            stopForeground(true)
+        }
         stopSelf()
         Log.i(TAG, "VPN stopped")
     }
