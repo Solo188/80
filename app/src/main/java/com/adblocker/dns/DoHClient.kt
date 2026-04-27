@@ -82,8 +82,8 @@ object DoHClient {
                 raw.connect(InetSocketAddress(server.ip, server.port), CONNECT_TIMEOUT)
                 raw.soTimeout = IO_TIMEOUT
 
-                val ssl = (SSLSocketFactory.getDefault()
-                    .createSocket(raw, server.host, server.port, true) as SSLSocket)
+                val sslFactory = SSLSocketFactory.getDefault() as SSLSocketFactory
+                val ssl = sslFactory.createSocket(raw, server.host, server.port, true) as SSLSocket
                 ssl.useClientMode = true
                 // SNI уже задан через createSocket(host, port)
                 ssl.soTimeout = IO_TIMEOUT
