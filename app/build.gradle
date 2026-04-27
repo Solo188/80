@@ -32,6 +32,7 @@ android {
     }
 
     compileOptions {
+        // desugar_jdk_libs:1.2.3 — совместима с AGP 8.3.x и покрывает java.time.*
         coreLibraryDesugaringEnabled true
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
@@ -62,7 +63,8 @@ android {
 }
 
 dependencies {
-    coreLibraryDesugaring 'com.android.tools.desugar_jdk_libs:desugar_jdk_libs:2.0.4'
+    // FIX #1: 1.2.3 совместима с AGP 8.3.x; 2.0.4 требует AGP 8.4+ и не найдена в репо
+    coreLibraryDesugaring 'com.android.tools.desugar_jdk_libs:desugar_jdk_libs:1.2.3'
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
