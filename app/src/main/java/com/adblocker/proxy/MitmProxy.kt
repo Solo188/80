@@ -43,13 +43,20 @@ class MitmProxy(
     val filter = AdFilter(filterEngine)
 
     /**
-     * Инициализирует CA и запускает accept-loop.
+     * Инициализирует CA синхронно.
+     * Вызывать из основного потока ДО запуска proxyThread.
+     * После этого getCaPemFile() безопасен.
+     */
+    fun initCa() {
+        ca.init()
+    }
+
+    /**
+     * Биндится к порту и запускает accept-loop.
      * Блокирует вызывающий поток — вызывать в отдельном потоке.
+     * initCa() должен быть вызван перед этим.
      */
     fun start() {
-        // Инициализируем CA ОДИН РАЗ здесь
-        ca.init()
-
         val ss = ServerSocket()
         ss.bind(java.net.InetSocketAddress("127.0.0.1", port))
         ss.soTimeout = ACCEPT_TIMEOUT
