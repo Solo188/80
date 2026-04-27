@@ -105,31 +105,28 @@ class AdBlockerVpnService : VpnService() {
         )
         mitmProxy = proxy
 
-        // Latch: ждём пока proxy.start() привяжется к порту
+        // Инициализируем CA синхронно в текущем потоке —
+        // после этого proxy.getCaPemFile() безопасен без гонок
+        proxy.initCa()
+        Log.i(TAG, "CA initialized: ${proxy.getCaPemFile().absolutePath}")
+
+        // Запускаем accept-loop в отдельном потоке (блокирующий)
         val proxyBound = CountDownLatch(1)
         proxyThread = Thread({
             try {
-                // proxy.start() сначала вызывает ca.init(), затем bind()
-                // Нам нужен сигнал после bind — переопределить нельзя, поэтому
-                // даём 3 секунды на инициализацию и движемся дальше
-                Thread {
-                    Thread.sleep(200)  // дать время на ca.init() + bind
-                    proxyBound.countDown()
-                }.apply { isDaemon = true; start() }
-
-                proxy.start()  // блокирует до stop()
+                proxyBound.countDown()   // сигнал: сейчас начнём bind()
+                proxy.start()            // блокирует до stop()
             } catch (e: Exception) {
                 Log.e(TAG, "MitmProxy error", e)
                 proxyBound.countDown()
             }
         }, "MitmProxy-main").apply { isDaemon = true; start() }
 
-        // Ждём 4 секунды на старт прокси
+        // Ждём пока поток стартует (мгновенно, просто гарантия)
         if (!proxyBound.await(4, TimeUnit.SECONDS)) {
-            Log.w(TAG, "MitmProxy bind wait timeout — continuing")
+            Log.w(TAG, "MitmProxy start timeout")
         }
-
-        Log.i(TAG, "MitmProxy started on :$PROXY_PORT, CA: ${proxy.getCaPemFile().absolutePath}")
+        Log.i(TAG, "MitmProxy started on :$PROXY_PORT")
 
         // 4. TcpStack читает/пишет пакеты из VPN tun
         val pfd   = vpnInterface!!
