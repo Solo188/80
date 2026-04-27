@@ -83,7 +83,7 @@ class MitmConnection(
         // TLS handshake с клиентом (autoClose=false — не закрывает clientSocket)
         val serverCtx     = ca.getServerSslContext(host)
         val clientSslSock = (serverCtx.socketFactory as javax.net.ssl.SSLSocketFactory)
-            .createSocket(clientSocket, clientIn, false) as SSLSocket
+            .createSocket(clientSocket, clientSocket.inetAddress.hostAddress, clientSocket.port, false) as SSLSocket
         clientSslSock.useClientMode = false
         clientSslSock.enabledProtocols = clientSslSock.supportedProtocols
             .filter { it.startsWith("TLS") }.toTypedArray()
