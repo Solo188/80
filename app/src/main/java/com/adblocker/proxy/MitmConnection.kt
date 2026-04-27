@@ -82,7 +82,7 @@ class MitmConnection(
 
         // TLS handshake с клиентом (autoClose=false — не закрывает clientSocket)
         val serverCtx     = ca.getServerSslContext(host)
-        val clientSslSock = serverCtx.socketFactory
+        val clientSslSock = (serverCtx.socketFactory as javax.net.ssl.SSLSocketFactory)
             .createSocket(clientSocket, clientIn, false) as SSLSocket
         clientSslSock.useClientMode = false
         clientSslSock.enabledProtocols = clientSslSock.supportedProtocols
@@ -190,7 +190,8 @@ class MitmConnection(
             sock.soTimeout = UPSTREAM_TIMEOUT
 
             val ctx     = ca.getUpstreamSslContext()
-            val sslSock = ctx.socketFactory.createSocket(sock, host, port, true) as SSLSocket
+            val sslSock = (ctx.socketFactory as javax.net.ssl.SSLSocketFactory)
+                .createSocket(sock, host, port, true) as SSLSocket
             sslSock.useClientMode = true
 
             // ALPN: h2 и http/1.1 — API 29+ (Android 10+, у нас minSdk=30)
